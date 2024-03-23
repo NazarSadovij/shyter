@@ -40,10 +40,10 @@ class Player(Hero):
 
     def fire(self):
         bullet = Bullet(self.rect.x, self.rect.y, 10, 10, 10, "bullet.png")
-        bullets.append(bullet)
+        bullets.add(bullet)
 
 counter = 0
-bullets = []
+bullets = sprite.Group()
 
 
 class Enemy (Hero):
@@ -68,30 +68,26 @@ class Bullet(Hero):
 rocket = Player (350, 400, 50, 100, 5)
 
 
-enemys = []
+
+
+enemys = sprite.Group()
+finish = False
+
 for i in range(5):
     enemy1 = Enemy (random.randint(50, 565), -100, 150, 50, random.randint(1, 4), "ufo.png")
-    enemys.append(enemy1)
+    enemys.add(enemy1)
 
 font.init()
 
 font1 = font.Font(None, 30)
-font2 = font.Font(None, 30)
+
+font3 = font.Font(None, 30)
+font4 = font.Font(None, 30)
+
+lifes = 3
+killed = 0
 
 while game:
-    window.blit(bg, (0, 0))
-    print(counter)
-    window.blit(font1.render(f"Лічильник пропущених {counter}", True, (255,255,255), (0,0,0)), (0, 0))
-    window.blit(font2.render(f"Лічильник вбитих {counter}", True, (255,255,255), (0,0,0)), (0, 40))
-
-
-    for i in enemys:
-        i.reset()
-        i.move()
-
-    for b in bullets:
-        b.reset()
-        b.move()
 
     for e in event.get():
         if e.type == QUIT:
@@ -101,9 +97,43 @@ while game:
             if e.key == K_SPACE:
                 rocket.fire()
 
-    enemy1.reset()
-    enemy1.move()
-    rocket.reset()
-    rocket.move()
+    window.blit(bg, (0, 0))
+    if finish != True:
+        print(counter)
+        window.blit(font1.render(f"Лічильник пропущених {counter}", True, (255,255,255), (0,0,0)), (0, 0))
+        
+        window.blit(font3.render(f"Життя: {lifes}", True, (255,255,255), (0,0,0)), (15, 90))
+        window.blit(font4.render(f"Збитих: {killed}", True, (255,255,255), (0,0,0)), (15, 130))
+
+        for i in enemys:
+            i.reset()
+            i.move()
+
+        for b in bullets:
+            b.reset()
+            b.move()
+
+    
+
+        list_collides = sprite.spritecollide(rocket, enemys, False)
+        for collide in list_collides:
+            if collide:
+                lifes -= 1
+                for i in enemys:
+                    i.rect.y = -100    
+                    i.rect.x = random.randint(50, 565)
+
+        list_collides = sprite.groupcollide(enemys, bullets, True, True)
+
+        for collide in list_collides:
+            if collide:
+                killed += 1
+                enemy1 = Enemy (random.randint(50, 565), -100, 100, 30, random.randint(1, 4), "ufo.png")
+                enemys.add(enemy1)
+
+        
+        rocket.reset()
+        rocket.move()
+
     clock.tick(60)
     display.update()
